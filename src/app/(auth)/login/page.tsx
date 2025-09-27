@@ -11,15 +11,6 @@ function LoginForm() {
     setError(null);
 
     const fd = new FormData(e.currentTarget);
-    const email = String(fd.get("email") || "");
-    const password = String(fd.get("password") || "");
-
-    if (email.length < 3) {
-      return setError("Email must be at least 3 characters.");
-    }
-    if (password.length < 3) {
-      return setError("Password must be at least 3 characters.");
-    }
 
     const res = await fetch("/api/auth/login", {
       method: "POST",
@@ -40,17 +31,14 @@ function LoginForm() {
     <div>
       <form onSubmit={onSubmit}>
         <input name="email" type="email" placeholder="Email" required />
-        <input
-          name="password"
-          type="password"
-          placeholder="Password"
-          required
-        />
+        <input name="password" type="password" placeholder="Password" required />
         <button type="submit">Login</button>
       </form>
+
       {error && <p style={{ color: "red" }}>{error}</p>}
+
       <p>
-        Not a member? <Link href="/signup">Register</Link>
+        Don’t have an account? <Link href="/signup">Sign up</Link>
       </p>
     </div>
   );
