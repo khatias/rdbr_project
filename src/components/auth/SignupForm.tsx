@@ -38,28 +38,53 @@ function SignupForm() {
   }
 
   return (
-    <div>
-      <form onSubmit={onSubmit}>
-        <input name="username" type="text" placeholder="Username" required />
-        <input name="email" type="email" placeholder="Email" required />
-        <input
-          name="password"
-          type="password"
-          placeholder="Password"
-          required
-        />
-        <input
-          name="password_confirmation"
-          type="password"
-          placeholder="Confirm Password"
-          required
-        />
-        <button type="submit">register</button>
-      </form>
-      {error && <p style={{ color: "red" }}>{error}</p>}
-      <p>
-        already member? <Link href="/login">Log in</Link>
-      </p>
+    <div className="flex justify-center items-center ">
+      <div className="">
+        <h2 className="text-[42px] font-semibold ">Register</h2>
+        <form onSubmit={onSubmit} className="flex flex-col gap-6 mt-8">
+          <input
+            name="username"
+            type="text"
+            placeholder="Username"
+            required
+            className="h-[42px] w-[554px] rounded-[8px] border border-[#E1DFE1] px-3"
+          />
+          <input
+            name="email"
+            type="email"
+            placeholder="Email"
+            required
+            className="h-[42px] w-[554px] rounded-[8px] border border-[#E1DFE1] px-3"
+          />
+          <input
+            name="password"
+            type="password"
+            placeholder="Password"
+            required
+            className="h-[42px] w-[554px] rounded-[8px] border border-[#E1DFE1] px-3"
+          />
+          <input
+            name="password_confirmation"
+            type="password"
+            placeholder="Confirm Password"
+            required
+            className="h-[42px] w-[554px] rounded-[8px] border border-[#E1DFE1] px-3"
+          />
+          <button
+            className="h-[42px] w-[554px] rounded-[8px] border border-[#E1DFE1]  px-3 mt-4 bg-[#FF4000] text-white font-medium"
+            type="submit"
+          >
+            register
+          </button>
+        </form>
+        {error && <p style={{ color: "red" }}>{error}</p>}
+        <div className="mt-4 text-center">
+          {" "}
+          <p>
+            already member? <Link href="/login"> <span className="text-[#FF4000] font-medium">Log in</span></Link>
+          </p>
+        </div>
+      </div>
     </div>
   );
 }
