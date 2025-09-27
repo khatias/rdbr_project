@@ -27,7 +27,11 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
+        <main className="grid place-items-center">
+      <div className="w-full max-w-[1920px]">
         {children}
+      </div>
+    </main>
       </body>
     </html>
   );
