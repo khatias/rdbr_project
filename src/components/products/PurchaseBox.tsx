@@ -1,3 +1,4 @@
+// components/products/PurchaseBox.tsx
 "use client";
 
 import React from "react";
@@ -15,56 +16,71 @@ export default function PurchaseBox({
   sizes = [],
   initialColor,
   initialSize,
+  currentImageUrl,     // <-- image that matches selected color
+  controlledColor,
+  onColorChange,
 }: {
   productId: number;
   colors?: string[];
   sizes?: string[] | null;
   initialColor?: string;
   initialSize?: string;
+  controlledColor?: string;
+  currentImageUrl?: string;
+  onColorChange?: (color: string | undefined) => void;
 }) {
   const { add, pending } = useCart();
 
+  // local (uncontrolled) state
   const [color, setColor] = React.useState<string | undefined>(
-    typeof initialColor === "string" && initialColor.trim()
-      ? initialColor
-      : undefined
+    typeof initialColor === "string" && initialColor.trim() ? initialColor : undefined
   );
   const [size, setSize] = React.useState<string | undefined>(
-    typeof initialSize === "string" && initialSize.trim()
-      ? initialSize
-      : undefined
+    typeof initialSize === "string" && initialSize.trim() ? initialSize : undefined
   );
   const [qty, setQty] = React.useState<number>(1);
 
   const hasSizes = Array.isArray(sizes) && sizes.length > 0;
   const hasColors = Array.isArray(colors) && colors.length > 0;
 
-  const canSubmit = qty > 0 && (!hasColors || !!color) && (!hasSizes || !!size);
+  // prefer parent-controlled color (synced with Gallery)
+  const effectiveColor = controlledColor ?? color;
+
+  const canSubmit = qty > 0 && (!hasColors || !!effectiveColor) && (!hasSizes || !!size);
 
   function resolveSizeToSend(): string {
     if (hasSizes) {
       if (size) {
         const match =
-          sizes!.find(
-            (s) => s.trim().toLowerCase() === size.trim().toLowerCase()
-          ) ?? null;
+          sizes!.find((s) => s.trim().toLowerCase() === size.trim().toLowerCase()) ?? null;
         if (match) return match;
       }
-
       return sizes![0];
     }
-
     return DEFAULT_SIZE;
+  }
+
+  function handleColor(next?: string) {
+    onColorChange?.(next); // keep Gallery in sync
+    setColor(next);        // keep local for uncontrolled mode
   }
 
   async function onAdd() {
     if (!canSubmit) return;
 
-    const payload: { quantity: number; color?: string; size: string } = {
+    // Include color AND the image tied to the selected color
+    const payload: {
+      quantity: number;
+      size: string;
+      color?: string;
+      image?: string;
+    } = {
       quantity: qty,
       size: resolveSizeToSend(),
     };
-    if (hasColors && color) payload.color = color;
+
+    if (hasColors && effectiveColor) payload.color = effectiveColor;
+    if (currentImageUrl) payload.image = currentImageUrl;
 
     await add(productId, payload);
   }
@@ -73,17 +89,13 @@ export default function PurchaseBox({
     <div className="space-y-14">
       {hasColors ? (
         <section>
-          <ColorSwatches colors={colors} value={color} onChange={setColor} />
+          <ColorSwatches colors={colors} value={effectiveColor} onChange={handleColor} />
         </section>
       ) : null}
 
       {hasSizes ? (
         <section>
-          <SizeSwatches
-            sizes={sizes as string[]}
-            value={size}
-            onChange={setSize}
-          />
+          <SizeSwatches sizes={sizes as string[]} value={size} onChange={setSize} />
         </section>
       ) : null}
 
@@ -95,10 +107,8 @@ export default function PurchaseBox({
         type="button"
         onClick={onAdd}
         disabled={!canSubmit || pending}
-        className={`w-full inline-flex items-center justify-center gap-2 text-[18px] px-6 py-4   rounded-[10px] font-medium text-white ${
-          !canSubmit || pending
-            ? "bg-gray-400 cursor-not-allowed"
-            : "bg-[#FF4000] hover:bg-[#e03e00]"
+        className={`w-full inline-flex items-center justify-center gap-2 text-[18px] px-6 py-4 rounded-[10px] font-medium text-white ${
+          !canSubmit || pending ? "bg-gray-400 cursor-not-allowed" : "bg-[#FF4000] hover:bg-[#e03e00]"
         }`}
       >
         <ShoppingCartIcon className="h-5 w-5" />

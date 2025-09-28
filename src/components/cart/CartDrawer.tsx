@@ -5,16 +5,14 @@ import Image from "next/image";
 import { useCart } from "./CartContext";
 import { XMarkIcon, PlusIcon, MinusIcon } from "@heroicons/react/24/outline";
 import emptyCartImage from "../../assets/emptycart.png";
+
 export default function CartDrawer() {
-  const { isOpen, close, items, subtotal, error, updateQty, remove, pending } =
-    useCart();
+  const { isOpen, close, items, subtotal, error, updateQty, remove, pending } = useCart();
   const itemsQuantity = items.reduce((acc, item) => acc + item.quantity, 0);
 
   return (
     <>
-      {isOpen && (
-        <div className="fixed inset-0 z-40 bg-black/40" onClick={close} />
-      )}
+      {isOpen && <div className="fixed inset-0 z-40 bg-black/40" onClick={close} />}
       <aside
         className={`fixed right-0 top-0 z-50 h-full w-[540px] max-w-[90vw] bg-[#F8F6F7] shadow-xl transition-transform duration-300 ${
           isOpen ? "translate-x-0" : "translate-x-full"
@@ -67,14 +65,12 @@ export default function CartDrawer() {
                 >
                   {/* Image */}
                   <div className="relative h-[134px] w-25 flex-shrink-0 rounded-md border border-slate-200 overflow-hidden bg-slate-50">
-                    {it.cover_image ? (
-                      <Image
-                        src={it.cover_image}
-                        alt={it.name}
-                        fill
-                        className="object-cover"
-                      />
-                    ) : null}
+                    {(() => {
+                      const src = it.image ?? it.cover_image; // prefer color-specific image
+                      return src ? (
+                        <Image src={src} alt={it.name} fill className="object-cover" />
+                      ) : null;
+                    })()}
                   </div>
 
                   {/* Info */}
@@ -148,12 +144,10 @@ export default function CartDrawer() {
         </div>
 
         {items.length > 0 ? (
-          <footer className="flex-none px-10 py-6  ">
+          <footer className="flex-none px-10 py-6">
             <div className="flex items-center justify-between text-sm">
               <span className="text-[#3E424A]">Items Subtotal</span>
-              <span className="font-medium text-[#10151F]">
-                ${subtotal.toFixed(2)}
-              </span>
+              <span className="font-medium text-[#10151F]">${subtotal.toFixed(2)}</span>
             </div>
             <div className="mt-2 flex items-center justify-between text-sm">
               <span className="text-[#3E424A]">Delivery</span>
