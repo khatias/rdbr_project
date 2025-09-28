@@ -1,13 +1,9 @@
-// app/listing/[id]/page.tsx
 import React from "react";
-import Image from "next/image"; // ← add
+import Image from "next/image";
 import { notFound } from "next/navigation";
 import Gallery from "@/components/Gallery";
-import ColorSwatches from "@/components/ColorSwatches";
-import SizeSwatches from "@/components/products/SizeSwatches";
-import QtyPicker from "@/components/products/QtyPicker";
-import { ShoppingCartIcon } from "@heroicons/react/24/outline";
 
+import PurchaseBox from "@/components/products/PurchaseBox";
 const API = "https://api.redseam.redberryinternship.ge/api";
 
 type Product = {
@@ -21,7 +17,6 @@ type Product = {
   color?: string | null;
   available_sizes?: string[];
   brand?: {
-    // ← add
     id: number;
     name: string;
     image?: string | null;
@@ -46,11 +41,10 @@ export default async function ProductPage({
   const { id } = await params;
   const product = await getProduct(id);
   if (!product) notFound();
-
+console.log(product);
   const gallery = [product.cover_image, ...(product.images ?? [])].filter(
     Boolean
   );
-  const availableColors = product.available_colors ?? [];
 
   return (
     <div className="px-[100px]">
@@ -63,31 +57,12 @@ export default async function ProductPage({
             <p>${product.price}</p>
           </div>
 
-          {availableColors.length > 0 && (
-            <section>
-              <ColorSwatches
-                colors={availableColors}
-                value={product.color ?? undefined}
-              />
-            </section>
-          )}
-
-          {product.available_sizes?.length ? (
-            <section>
-              <SizeSwatches sizes={product.available_sizes as string[]} />
-            </section>
-          ) : null}
-
-          <section>
-            <QtyPicker max={10} />
-          </section>
-
-          <button>
-            <span className="w-full inline-block text-center bg-[#FF4000] text-white text-[18px] font-medium px-6 py-4 rounded-[10px] hover:bg-[#e03e00] transition">
-              <ShoppingCartIcon className="h-5 w-5 inline-block mr-2" />
-              Add to Cart
-            </span>
-          </button>
+          <PurchaseBox
+            productId={product.id}
+            colors={product.available_colors ?? []}
+            sizes={product.available_sizes ?? []}
+            initialColor={product.color ?? undefined}
+          />
 
           <div className="border-b border-b-[#E1DFE1]" />
 

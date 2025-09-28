@@ -1,3 +1,4 @@
+// components/cart/CartContext.tsx
 "use client";
 
 import React from "react";
@@ -10,6 +11,8 @@ export type CartItem = {
   total_price: number;
   quantity: number;
   brand?: { id: number; name: string; image?: string | null };
+  color?: string | null; // may be null from API
+  size?: string | null;  // may be null from API
 };
 
 type CartCtx = {
@@ -20,7 +23,7 @@ type CartCtx = {
   reload: () => Promise<void>;
   add: (
     productId: number,
-    payload: { quantity: number; color?: string; size?: string }
+    payload: { quantity: number; color?: string | null; size?: string | null }
   ) => Promise<void>;
   error: string | null;
   pending: boolean;
@@ -28,6 +31,24 @@ type CartCtx = {
 };
 
 const Ctx = React.createContext<CartCtx | null>(null);
+
+// helper: keep only non-empty strings (avoid sending null/undefined)
+function cleanVariantFields(p: { quantity: number; color?: string | null; size?: string | null }) {
+  const out: { quantity: number; color?: string; size?: string } = { quantity: p.quantity };
+  if (typeof p.color === "string" && p.color.trim() !== "") out.color = p.color;
+  if (typeof p.size === "string" && p.size.trim() !== "") out.size = p.size;
+  return out;
+}
+
+// helper: normalize API item so UI never crashes on nulls
+function normalizeItem(it: unknown): CartItem {
+  const item = it as Partial<CartItem>;
+  return {
+    ...item,
+    color: typeof item?.color === "string" ? item.color : null,
+    size: typeof item?.size === "string" ? item.size : null,
+  } as CartItem;
+}
 
 export function CartProvider({ children }: { children: React.ReactNode }) {
   const [items, setItems] = React.useState<CartItem[]>([]);
@@ -44,13 +65,10 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
       const res = await fetch("/api/cart", { cache: "no-store" });
       const data = await res.json();
       if (!res.ok) throw new Error(data?.message || `HTTP ${res.status}`);
-      setItems(Array.isArray(data) ? data : []);
+      const normalized = Array.isArray(data) ? data.map(normalizeItem) : [];
+      setItems(normalized);
     } catch (e: unknown) {
-      if (e instanceof Error) {
-        setError(e.message);
-      } else {
-        setError("Failed to load cart");
-      }
+      setError(e instanceof Error ? e.message : "Failed to load cart");
     } finally {
       setPending(false);
     }
@@ -62,26 +80,29 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
 
   async function add(
     productId: number,
-    payload: { quantity: number; color?: string; size?: string }
+    payload: { quantity: number; color?: string | null; size?: string | null }
   ) {
     setPending(true);
     setError(null);
     try {
+      // don’t send nulls to backend
+      const body = cleanVariantFields(payload);
+
       const res = await fetch(`/api/cart/products/${productId}`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
           Accept: "application/json",
         },
-        body: JSON.stringify(payload),
+        body: JSON.stringify(body),
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data?.message || `HTTP ${res.status}`);
-      await reload();
-      setOpen(true);
+
+      setOpen(true);     // open immediately
+      await reload();    // then refresh cart
     } catch (e: unknown) {
-      const message = e instanceof Error ? e.message : "Failed to add to cart";
-      setError(message);
+      setError(e instanceof Error ? e.message : "Failed to add to cart");
     } finally {
       setPending(false);
     }
