@@ -15,12 +15,19 @@ type CartItem = {
   size?: string | null;
 };
 
-export default function CheckoutShell({
-  initialItems,
-}: {
-  initialItems: CartItem[];
-}) {
+export default function CheckoutShell({ initialItems }: { initialItems: CartItem[] }) {
   const [open, setOpen] = React.useState(false);
+
+  React.useEffect(() => {
+    if (!open) return;
+    const t = setTimeout(() => {
+      if (typeof window !== "undefined") {
+        // hard navigation => fresh SSR + empty cart
+        window.location.assign("/listing");
+      }
+    }, 1000);
+    return () => clearTimeout(t);
+  }, [open]);
 
   return (
     <div className="w-full">
@@ -32,11 +39,18 @@ export default function CheckoutShell({
         </div>
 
         <aside className="lg:col-span-1 ">
-          <OrderSummary initialItems={initialItems} />
+          <OrderSummary
+            initialItems={initialItems.map((item) => ({
+              ...item,
+              total_price: item.price * item.quantity,
+            }))}
+          />
         </aside>
       </div>
 
       <SuccessModal open={open} onClose={() => setOpen(false)} />
+
+    
     </div>
   );
 }

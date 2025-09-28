@@ -2,7 +2,7 @@
 
 import React from "react";
 import Image from "next/image";
-import { useCart } from "./CartContext";
+import { useCart } from "@/components/cart/CartContext";
 import { XMarkIcon, PlusIcon, MinusIcon } from "@heroicons/react/24/outline";
 import emptyCartImage from "../../assets/emptycart.png";
 
