@@ -1,4 +1,4 @@
-// ProductClient.tsx (client component coordinating Gallery + PurchaseBox)
+// ProductClient.tsx
 "use client";
 
 import React from "react";
@@ -18,6 +18,9 @@ type Product = {
   brand?: Brand;
   color?: string | null;
   size?: string | null;
+  // from your API:
+  total_price?: number;
+  quantity?: number; // total stock across all variants
 };
 
 function dedupeUrls(arr: string[]) {
@@ -29,8 +32,6 @@ function dedupeUrls(arr: string[]) {
     return true;
   });
 }
-
-// Case-insensitive find index
 const ciFindIndex = (arr: string[], value?: string | null) => {
   if (!value) return -1;
   const needle = value.toLowerCase();
@@ -44,12 +45,9 @@ export default function ProductClient({ product }: { product: Product }) {
   );
   const gallery = dedupeUrls(rawImages);
 
-  // If cover_image is NOT in product.images, then colors start at gallery[1]
-  // If cover_image IS in product.images (duplicate), dedupe removed it -> colors start at gallery[0]
   const coverInImages = (product.images ?? []).includes(product.cover_image);
   const coverOffset = coverInImages ? 0 : 1;
 
-  // Map color -> gallery index (respecting the offset)
   const colorToGalleryIndex = (c?: string | null) => {
     if (!colors.length) return 0;
     const colorIdx = ciFindIndex(colors, c);
@@ -58,30 +56,33 @@ export default function ProductClient({ product }: { product: Product }) {
     return Math.min(Math.max(0, idx), Math.max(0, gallery.length - 1));
   };
 
-  // Map gallery index -> color value (reverse)
   const galleryIndexToColor = (i: number): string | undefined => {
     const colorIdx = i - coverOffset;
     if (colorIdx < 0 || colorIdx >= colors.length) return undefined;
     return colors[colorIdx];
   };
 
-  // Initial selection (prefer product.color, else first color)
+  // If API gives product.color = "Color 2" (not in available_colors),
+  // we safely fall back to the first color.
   const initialIndex = colorToGalleryIndex(product.color ?? colors[0]);
   const [activeIndex, setActiveIndex] = React.useState<number>(initialIndex);
 
-  // Keep PurchaseBox’s selected color in sync with gallery
   const controlledColor = galleryIndexToColor(activeIndex);
 
-  // When user changes swatch -> jump gallery to the matching image
   const handleColorChange = (next?: string) => {
     setActiveIndex(colorToGalleryIndex(next));
   };
 
-  // When user clicks a thumbnail -> update controlledColor by index
-  const handleThumbClick = (i: number) => {
-    setActiveIndex(i);
-  };
+  const handleThumbClick = (i: number) => setActiveIndex(i);
 
+  // ✅ Global stock (no per-variant). If quantity is undefined, we treat as unlimited.
+  const getStock = React.useCallback(() => {
+    const q = product.quantity;
+    if (typeof q === "number" && Number.isFinite(q))
+      return Math.max(0, Math.floor(q));
+    return undefined; // PurchaseBox will treat as unlimited
+  }, [product.quantity]);
+  console.log(product.quantity);
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
       <Gallery
@@ -106,6 +107,7 @@ export default function ProductClient({ product }: { product: Product }) {
           controlledColor={controlledColor} // keep swatch in sync with gallery
           onColorChange={handleColorChange}
           currentImageUrl={gallery[activeIndex]}
+          getStock={getStock} // ← global stock
         />
       </div>
     </div>

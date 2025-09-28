@@ -10,15 +10,18 @@ import { useCart } from "@/components/cart/CartContext";
 
 const DEFAULT_SIZE = "S";
 
+type GetStockArgs = { color?: string; size?: string };
+
 export default function PurchaseBox({
   productId,
   colors = [],
   sizes = [],
   initialColor,
   initialSize,
-  currentImageUrl,     // <-- image that matches selected color
+  currentImageUrl, // image that matches selected color
   controlledColor,
   onColorChange,
+  getStock, // (args: { color?, size? }) => number | undefined
 }: {
   productId: number;
   colors?: string[];
@@ -28,6 +31,7 @@ export default function PurchaseBox({
   controlledColor?: string;
   currentImageUrl?: string;
   onColorChange?: (color: string | undefined) => void;
+  getStock?: (args: GetStockArgs) => number | undefined;
 }) {
   const { add, pending } = useCart();
 
@@ -46,7 +50,32 @@ export default function PurchaseBox({
   // prefer parent-controlled color (synced with Gallery)
   const effectiveColor = controlledColor ?? color;
 
-  const canSubmit = qty > 0 && (!hasColors || !!effectiveColor) && (!hasSizes || !!size);
+  // ---------- STOCK LOGIC (keeps QtyPicker interactive) ----------
+  const rawAvailable = getStock?.({ color: effectiveColor, size });
+  const availableQty = Number.isFinite(rawAvailable as number)
+    ? Math.max(0, Math.floor(rawAvailable as number))
+    : Infinity;
+
+  // Never pass 0 to QtyPicker (some pickers disable themselves on max=0).
+  // If stock is unknown (Infinity), use your previous UI cap (10).
+  const uiMax = Number.isFinite(availableQty) ? Math.max(1, availableQty) : 10;
+
+  // True out-of-stock check (independent of uiMax so Add button can be disabled).
+  const isOutOfStock = availableQty <= 0;
+
+  // Keep current qty clamped to the UI control’s range whenever stock changes.
+  React.useEffect(() => {
+    setQty((q) => Math.min(Math.max(1, q), uiMax));
+  }, [uiMax]);
+
+  const canSubmit =
+    qty > 0 &&
+    // check against real stock, not uiMax (so out-of-stock blocks Add)
+    qty <= (Number.isFinite(availableQty) ? (availableQty as number) : qty) &&
+    (!hasColors || !!effectiveColor) &&
+    (!hasSizes || !!size) &&
+    !pending &&
+    !isOutOfStock;
 
   function resolveSizeToSend(): string {
     if (hasSizes) {
@@ -62,20 +91,20 @@ export default function PurchaseBox({
 
   function handleColor(next?: string) {
     onColorChange?.(next); // keep Gallery in sync
-    setColor(next);        // keep local for uncontrolled mode
+    setColor(next); // keep local for uncontrolled mode
   }
 
   async function onAdd() {
     if (!canSubmit) return;
 
-    // Include color AND the image tied to the selected color
     const payload: {
       quantity: number;
       size: string;
       color?: string;
       image?: string;
     } = {
-      quantity: qty,
+      // extra safety: clamp against real availableQty if finite
+      quantity: Math.min(qty, Number.isFinite(availableQty) ? (availableQty as number) : qty),
       size: resolveSizeToSend(),
     };
 
@@ -100,7 +129,8 @@ export default function PurchaseBox({
       ) : null}
 
       <section>
-        <QtyPicker value={qty} onChange={setQty} max={10} />
+        {/* Keep QtyPicker clickable even when out of stock by using uiMax */}
+        <QtyPicker value={qty} onChange={setQty} max={uiMax} />
       </section>
 
       <button
@@ -112,7 +142,7 @@ export default function PurchaseBox({
         }`}
       >
         <ShoppingCartIcon className="h-5 w-5" />
-        {pending ? "Adding..." : "Add to Cart"}
+        {pending ? "Adding..." : isOutOfStock ? "Out of stock" : "Add to Cart"}
       </button>
     </div>
   );
