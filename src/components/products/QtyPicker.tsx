@@ -3,12 +3,32 @@
 import React from "react";
 import QuantitySelect from "@/components/products/QuantitySelect";
 
-export default function QtyPicker({ max = 10 }: { max?: number }) {
-  const [qty, setQty] = React.useState(1);
+export default function QtyPicker({
+  value,
+  onChange,
+  max = 10,
+  min = 1,
+  label = "Quantity",
+  className = "",
+}: {
+  value?: number;
+  onChange?: (n: number) => void;
+  max?: number;
+  min?: number;
+  label?: string;
+  className?: string;
+}) {
+  const [internal, setInternal] = React.useState<number>(value ?? min);
+  const controlled =
+    typeof value === "number" && typeof onChange === "function";
+
+  const qty = controlled ? (value as number) : internal;
+  const setQty = controlled ? (onChange as (n: number) => void) : setInternal;
+
   return (
-    <div className="flex flex-col gap-3">
-      <span className="text-[16px] text-[#10151F]">Quantity</span>
-      <QuantitySelect value={qty} onChange={setQty} max={max} />
+    <div className={`inline-flex items-center gap-3 ${className}`}>
+      <span className="text-sm text-slate-600">{label}</span>
+      <QuantitySelect value={qty} onChange={setQty} max={max} min={min} />
     </div>
   );
 }
