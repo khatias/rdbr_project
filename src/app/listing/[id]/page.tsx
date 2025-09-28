@@ -1,10 +1,12 @@
 // app/listing/[id]/page.tsx
 import React from "react";
+import Image from "next/image"; // ← add
 import { notFound } from "next/navigation";
 import Gallery from "@/components/Gallery";
 import ColorSwatches from "@/components/ColorSwatches";
 import SizeSwatches from "@/components/products/SizeSwatches";
 import QtyPicker from "@/components/products/QtyPicker";
+import { ShoppingCartIcon } from "@heroicons/react/24/outline";
 
 const API = "https://api.redseam.redberryinternship.ge/api";
 
@@ -18,6 +20,12 @@ type Product = {
   available_colors?: string[];
   color?: string | null;
   available_sizes?: string[];
+  brand?: {
+    // ← add
+    id: number;
+    name: string;
+    image?: string | null;
+  };
 };
 
 async function getProduct(id: string): Promise<Product | null> {
@@ -39,7 +47,9 @@ export default async function ProductPage({
   const product = await getProduct(id);
   if (!product) notFound();
 
-  const gallery = [product.cover_image, ...(product.images ?? [])].filter(Boolean);
+  const gallery = [product.cover_image, ...(product.images ?? [])].filter(
+    Boolean
+  );
   const availableColors = product.available_colors ?? [];
 
   return (
@@ -55,7 +65,10 @@ export default async function ProductPage({
 
           {availableColors.length > 0 && (
             <section>
-              <ColorSwatches colors={availableColors} value={product.color ?? undefined} />
+              <ColorSwatches
+                colors={availableColors}
+                value={product.color ?? undefined}
+              />
             </section>
           )}
 
@@ -69,9 +82,51 @@ export default async function ProductPage({
             <QtyPicker max={10} />
           </section>
 
-          {product.description ? (
-            <p className="mt-6 text-slate-700 leading-relaxed">{product.description}</p>
+          <button>
+            <span className="w-full inline-block text-center bg-[#FF4000] text-white text-[18px] font-medium px-6 py-4 rounded-[10px] hover:bg-[#e03e00] transition">
+              <ShoppingCartIcon className="h-5 w-5 inline-block mr-2" />
+              Add to Cart
+            </span>
+          </button>
+
+          <div className="border-b border-b-[#E1DFE1]" />
+
+          {product.brand ? (
+            <div className="">
+              {product.brand.image ? (
+                <div className="">
+                  <div className="flex w-full items-center justify-between ">
+                    <p className="font-medium text-xl eading-none tracking-normal">
+                      Details
+                    </p>
+                    <div className="relative w-[109px] h-[61px]">
+                      <Image
+                        src={product.brand.image!}
+                        alt={product.brand.name}
+                        fill
+                        className="object-contain "
+                      />
+                    </div>
+                  </div>
+                </div>
+              ) : null}
+              <div>
+                <div className="flex text-[16px] text-[#3E424A]">
+                  <p className="">
+                    <span>Brand: </span>
+                    {product.brand.name}
+                  </p>
+                </div>
+                {product.description ? (
+                  <p className="text-slate-700 leading-relaxed mt-5">
+                    {product.description}
+                  </p>
+                ) : null}
+              </div>
+            </div>
           ) : null}
+
+          {/* Description */}
         </div>
       </div>
     </div>
