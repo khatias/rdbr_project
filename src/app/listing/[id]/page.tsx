@@ -1,8 +1,8 @@
-// app/listing/[id]/page.tsx
 import React from "react";
 import { notFound } from "next/navigation";
 import Gallery from "@/components/Gallery";
 import ColorSwatches from "@/components/ColorSwatches";
+import SizeSwatches from "@/components/products/SizeSwatches";
 
 const API = "https://api.redseam.redberryinternship.ge/api";
 
@@ -14,7 +14,8 @@ type Product = {
   cover_image: string;
   images?: string[];
   available_colors?: string[];
-  color?: string | null; // optional current color from API if present
+  color?: string | null;
+  available_sizes?: string[];
 };
 
 async function getProduct(id: string): Promise<Product | null> {
@@ -34,6 +35,7 @@ export default async function ProductPage({
 }) {
   const { id } = await params;
   const product = await getProduct(id);
+  console.log(product);
   if (!product) notFound();
 
   const gallery = [product.cover_image, ...(product.images ?? [])].filter(
@@ -48,21 +50,22 @@ export default async function ProductPage({
 
         <div className="flex flex-col gap-14">
           <div className="text-3xl font-semibold text-[#10151F] flex flex-col gap-5">
-            <h1 className="">
-              {product.name}
-            </h1>
-            <p className="">
-              ${product.price}
-            </p>
+            <h1>{product.name}</h1>
+            <p>${product.price}</p>
           </div>
           {availableColors.length > 0 && (
-            <section className="mb-12">
+            <section>
               <ColorSwatches
                 colors={availableColors}
                 value={product.color ?? undefined}
               />
             </section>
           )}
+          {product.available_sizes?.length ? (
+            <section>
+              <SizeSwatches sizes={product.available_sizes as string[]} />
+            </section>
+          ) : null}
 
           {product.description ? (
             <p className="mt-6 text-slate-700 leading-relaxed">
