@@ -4,7 +4,7 @@ import sideImage from "../../../assets/authimage.png";
 import SignupForm from "@/components/auth/SignupForm";
 function page() {
   return (
-    <div className="grid grid-cols-2 min-h-screen text-[#10151F]  ">
+    <div className="grid grid-cols-2 min-h-screen text-[#10151F] w-full  ">
       <div className="relative ">
         <Image
           src={sideImage}
@@ -13,7 +13,7 @@ function page() {
           className="w-full h-full"
         />
       </div>
-      <div className="flex justify-center items-center ">
+      <div className="flex justify-center items-center  ">
         <SignupForm />
       </div>
     </div>

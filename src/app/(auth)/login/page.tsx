@@ -60,7 +60,7 @@ export default function LoginForm() {
   );
 
   return (
-    <div className="grid grid-cols-2 min-h-screen text-[#10151F]">
+    <div className="grid grid-cols-2 min-h-screen text-[#10151F] w-full">
       {/* Left side image */}
       <div className="relative">
         <Image
