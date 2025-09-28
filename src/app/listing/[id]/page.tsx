@@ -41,7 +41,7 @@ export default async function ProductPage({
   const { id } = await params;
   const product = await getProduct(id);
   if (!product) notFound();
-console.log(product);
+
   const gallery = [product.cover_image, ...(product.images ?? [])].filter(
     Boolean
   );
