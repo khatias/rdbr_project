@@ -3,7 +3,7 @@ import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { CartProvider } from "@/components/cart/CartContext";
 import CartDrawer from "@/components/cart/CartDrawer";
-
+import Header from "@/components/header/Header";
 const geistSans = Geist({
   variable: "--font-geist-sans",
   subsets: ["latin"],
@@ -31,6 +31,7 @@ export default function RootLayout({
       >
         <CartProvider>
           <CartDrawer />
+          <Header />
           <main className="grid place-items-center">
             <div className="w-full max-w-[1920px]">{children}</div>
           </main>
