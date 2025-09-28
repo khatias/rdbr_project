@@ -1,4 +1,4 @@
-// components/Gallery.tsx
+
 "use client";
 
 import React from "react";
@@ -9,9 +9,9 @@ type Props = {
   alt?: string;
   className?: string;
   height?: number;
-  /** Controlled index of the main image */
+
   activeIndex?: number;
-  /** Change handler when thumbnails are clicked */
+
   onChangeIndex?: (index: number) => void;
 };
 
@@ -25,7 +25,7 @@ export default function Gallery({
 }: Props) {
   const [internal, setInternal] = React.useState(0);
 
-  // If parent controls it, use that; otherwise fall back to internal state.
+ 
   const active = typeof activeIndex === "number" ? activeIndex : internal;
 
   if (!images?.length) {
@@ -71,7 +71,7 @@ export default function Gallery({
             alt={alt}
             fill
             className="object-cover"
-            sizes="(max-width: 1024px) 100vw, 730px"
+            sizes="(max-width: 703px) 100vw, 730px"
             priority
           />
         </div>

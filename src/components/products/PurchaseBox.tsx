@@ -1,4 +1,3 @@
-// components/products/PurchaseBox.tsx
 "use client";
 
 import React from "react";
@@ -18,10 +17,10 @@ export default function PurchaseBox({
   sizes = [],
   initialColor,
   initialSize,
-  currentImageUrl, // image that matches selected color
+  currentImageUrl,
   controlledColor,
   onColorChange,
-  getStock, // (args: { color?, size? }) => number | undefined
+  getStock,
 }: {
   productId: number;
   colors?: string[];
@@ -35,42 +34,38 @@ export default function PurchaseBox({
 }) {
   const { add, pending } = useCart();
 
-  // local (uncontrolled) state
   const [color, setColor] = React.useState<string | undefined>(
-    typeof initialColor === "string" && initialColor.trim() ? initialColor : undefined
+    typeof initialColor === "string" && initialColor.trim()
+      ? initialColor
+      : undefined
   );
   const [size, setSize] = React.useState<string | undefined>(
-    typeof initialSize === "string" && initialSize.trim() ? initialSize : undefined
+    typeof initialSize === "string" && initialSize.trim()
+      ? initialSize
+      : undefined
   );
   const [qty, setQty] = React.useState<number>(1);
 
   const hasSizes = Array.isArray(sizes) && sizes.length > 0;
   const hasColors = Array.isArray(colors) && colors.length > 0;
 
-  // prefer parent-controlled color (synced with Gallery)
   const effectiveColor = controlledColor ?? color;
 
-  // ---------- STOCK LOGIC (keeps QtyPicker interactive) ----------
   const rawAvailable = getStock?.({ color: effectiveColor, size });
   const availableQty = Number.isFinite(rawAvailable as number)
     ? Math.max(0, Math.floor(rawAvailable as number))
     : Infinity;
 
-  // Never pass 0 to QtyPicker (some pickers disable themselves on max=0).
-  // If stock is unknown (Infinity), use your previous UI cap (10).
   const uiMax = Number.isFinite(availableQty) ? Math.max(1, availableQty) : 10;
 
-  // True out-of-stock check (independent of uiMax so Add button can be disabled).
   const isOutOfStock = availableQty <= 0;
 
-  // Keep current qty clamped to the UI control’s range whenever stock changes.
   React.useEffect(() => {
     setQty((q) => Math.min(Math.max(1, q), uiMax));
   }, [uiMax]);
 
   const canSubmit =
     qty > 0 &&
-    // check against real stock, not uiMax (so out-of-stock blocks Add)
     qty <= (Number.isFinite(availableQty) ? (availableQty as number) : qty) &&
     (!hasColors || !!effectiveColor) &&
     (!hasSizes || !!size) &&
@@ -81,7 +76,9 @@ export default function PurchaseBox({
     if (hasSizes) {
       if (size) {
         const match =
-          sizes!.find((s) => s.trim().toLowerCase() === size.trim().toLowerCase()) ?? null;
+          sizes!.find(
+            (s) => s.trim().toLowerCase() === size.trim().toLowerCase()
+          ) ?? null;
         if (match) return match;
       }
       return sizes![0];
@@ -90,8 +87,8 @@ export default function PurchaseBox({
   }
 
   function handleColor(next?: string) {
-    onColorChange?.(next); // keep Gallery in sync
-    setColor(next); // keep local for uncontrolled mode
+    onColorChange?.(next);
+    setColor(next);
   }
 
   async function onAdd() {
@@ -103,8 +100,10 @@ export default function PurchaseBox({
       color?: string;
       image?: string;
     } = {
-      // extra safety: clamp against real availableQty if finite
-      quantity: Math.min(qty, Number.isFinite(availableQty) ? (availableQty as number) : qty),
+      quantity: Math.min(
+        qty,
+        Number.isFinite(availableQty) ? (availableQty as number) : qty
+      ),
       size: resolveSizeToSend(),
     };
 
@@ -118,18 +117,25 @@ export default function PurchaseBox({
     <div className="space-y-14">
       {hasColors ? (
         <section>
-          <ColorSwatches colors={colors} value={effectiveColor} onChange={handleColor} />
+          <ColorSwatches
+            colors={colors}
+            value={effectiveColor}
+            onChange={handleColor}
+          />
         </section>
       ) : null}
 
       {hasSizes ? (
         <section>
-          <SizeSwatches sizes={sizes as string[]} value={size} onChange={setSize} />
+          <SizeSwatches
+            sizes={sizes as string[]}
+            value={size}
+            onChange={setSize}
+          />
         </section>
       ) : null}
 
       <section>
-        {/* Keep QtyPicker clickable even when out of stock by using uiMax */}
         <QtyPicker value={qty} onChange={setQty} max={uiMax} />
       </section>
 
@@ -138,12 +144,16 @@ export default function PurchaseBox({
         onClick={onAdd}
         disabled={!canSubmit || pending}
         className={`w-full inline-flex items-center justify-center gap-2 text-[18px] px-6 py-4 rounded-[10px] font-medium text-white ${
-          !canSubmit || pending ? "bg-gray-400 cursor-not-allowed" : "bg-[#FF4000] hover:bg-[#e03e00]"
+          !canSubmit || pending
+            ? "bg-gray-400 cursor-not-allowed"
+            : "bg-[#FF4000] hover:bg-[#e03e00]"
         }`}
       >
         <ShoppingCartIcon className="h-5 w-5" />
         {pending ? "Adding..." : isOutOfStock ? "Out of stock" : "Add to Cart"}
       </button>
+      
     </div>
+    
   );
 }

@@ -1,9 +1,10 @@
 // app/listing/page.tsx
 import React from "react";
+import Link from "next/link";
 import Card from "@/components/Card";
 import { ArrowLeft, ArrowRight } from "lucide-react";
 import ProductsControl from "@/components/ProductsControl";
-import Link from "next/link";
+
 type Product = { id: number; name: string; cover_image: string; price: number };
 type Paginated<T> = {
   data: T[];
@@ -17,15 +18,13 @@ type Paginated<T> = {
 
 const API = "https://api.redseam.redberryinternship.ge/api";
 
-function buildPages(
-  currentPage: number,
-  totalPages: number
-): (number | "...")[] {
+function buildPages(currentPage: number, totalPages: number): (number | "...")[] {
   if (!Number.isFinite(totalPages) || totalPages <= 0) return [];
-  if (totalPages <= 7)
-    return Array.from({ length: totalPages }, (_, i) => i + 1);
+  if (totalPages <= 7) return Array.from({ length: totalPages }, (_, i) => i + 1);
+
   const windowStart = Math.max(2, currentPage - 1);
   const windowEnd = Math.min(totalPages - 1, currentPage + 1);
+
   const items: (number | "...")[] = [1];
   if (windowStart > 2) items.push("...");
   for (let p = windowStart; p <= windowEnd; p++) items.push(p);
@@ -37,10 +36,10 @@ function buildPages(
 export default async function Page({
   searchParams,
 }: {
-  searchParams: Promise<Record<string, string | string[] | undefined>>;
-}) {
-  const sp = await searchParams;
 
+  searchParams?: Record<string, string | string[] | undefined>;
+}) {
+  const sp = searchParams ?? {};
   const page = Number(sp.page || 1);
   const sort = ((sp.sort as string) || "-created_at") as string;
   const min = (sp["filter[price_from]"] as string) || "";
@@ -64,12 +63,10 @@ export default async function Page({
     });
     status = res.status;
     const raw = await res.text();
-    const isJSON = (res.headers.get("content-type") || "").includes(
-      "application/json"
-    );
+    const isJSON = (res.headers.get("content-type") || "").includes("application/json");
     const data = isJSON && raw ? JSON.parse(raw) : { message: raw || "" };
     if (!res.ok) {
-      errorText = data?.message || `HTTP ${status}`;
+      errorText = (data as { message?: string })?.message || `HTTP ${status}`;
     } else {
       payload = data as Paginated<Product>;
     }
@@ -79,33 +76,33 @@ export default async function Page({
 
   if (!payload) {
     return (
-      <div className="max-w-[1720px] mx-auto mt-10 space-y-2">
-        <p className="text-red-600">Failed to load products.</p>
-        {errorText ? (
-          <pre className="text-xs text-slate-600 whitespace-pre-wrap">
-            {errorText}
-          </pre>
-        ) : null}
-        {status ? (
-          <p className="text-xs text-slate-500">Status: {status}</p>
-        ) : null}
+      <div className="  py-10 space-y-3">
+        <h2 className="text-[42px] font-semibold">Products</h2>
+        <div className="rounded-lg border border-[#E1DFE1] p-6">
+          <p className="text-red-600">Failed to load products.</p>
+          {errorText ? (
+            <pre className="mt-2 text-xs text-slate-600 whitespace-pre-wrap">{errorText}</pre>
+          ) : null}
+          {status ? <p className="mt-2 text-xs text-slate-500">Status: {status}</p> : null}
+        </div>
       </div>
     );
   }
 
   const currentPage = payload.meta?.current_page ?? page;
   const totalPages =
-    payload.meta?.last_page ??
-    (payload.data.length < 12 ? currentPage : currentPage + 1);
+    payload.meta?.last_page ?? (payload.data.length < 12 ? currentPage : currentPage + 1);
 
   return (
-    <div className="max-w-[1720px] mx-auto px-10 mt-10 space-y-8">
+    <div className="space-y-8 w-full">
+      {/* Header row */}
       <div className="flex items-center justify-between">
         <h2 className="text-[42px] font-semibold">Products</h2>
         <ProductsControl />
       </div>
 
-      <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4">
+      {/* Cards grid */}
+      <div className="grid gap-8 grid-cols-4 w-full">
         {payload.data.map((product) => (
           <Link
             key={product.id}
@@ -118,6 +115,7 @@ export default async function Page({
         ))}
       </div>
 
+      {/* Pagination */}
       <Pagination
         currentPage={currentPage}
         totalPages={Number(totalPages)}
@@ -142,7 +140,7 @@ function Pagination({
   const prevPage = currentPage > 1 ? currentPage - 1 : 1;
   const nextPage = currentPage < totalPages ? currentPage + 1 : totalPages;
 
-  const link = (p: number) => {
+  const buildHref = (p: number) => {
     const params = new URLSearchParams();
     params.set("page", String(p));
     const min = searchParams["filter[price_from]"];
@@ -158,17 +156,15 @@ function Pagination({
 
   return (
     <div className="flex items-center justify-center gap-2">
-      <a
-        href={link(prevPage)}
-        className={`p-2 rounded-lg ${
-          currentPage === 1
-            ? "pointer-events-none opacity-40"
-            : "hover:bg-gray-50"
-        }`}
+      <Link
+        href={buildHref(prevPage)}
         aria-label="Previous"
+        className={`p-2 rounded-lg ${
+          currentPage === 1 ? "pointer-events-none opacity-40" : "hover:bg-gray-50"
+        }`}
       >
         <ArrowLeft className="w-5 h-5" />
-      </a>
+      </Link>
 
       {pages.map((p, idx) =>
         p === "..." ? (
@@ -176,9 +172,9 @@ function Pagination({
             …
           </span>
         ) : (
-          <a
+          <Link
             key={p}
-            href={link(p)}
+            href={buildHref(p)}
             className={`px-3 py-2 rounded-lg border ${
               p === currentPage
                 ? "border-orange-600 text-orange-600"
@@ -186,21 +182,19 @@ function Pagination({
             }`}
           >
             {p}
-          </a>
+          </Link>
         )
       )}
 
-      <a
-        href={link(nextPage)}
-        className={`p-2 rounded-lg ${
-          currentPage === totalPages
-            ? "pointer-events-none opacity-40"
-            : "hover:bg-gray-50"
-        }`}
+      <Link
+        href={buildHref(nextPage)}
         aria-label="Next"
+        className={`p-2 rounded-lg ${
+          currentPage === totalPages ? "pointer-events-none opacity-40" : "hover:bg-gray-50"
+        }`}
       >
         <ArrowRight className="w-5 h-5" />
-      </a>
+      </Link>
     </div>
   );
 }

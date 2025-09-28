@@ -85,7 +85,7 @@ export default function ProductsControl() {
           className="inline-flex items-center gap-2 rounded-md px-3 py-2 text-sm"
         >
           <AdjustmentsHorizontalIcon className="h-5 w-5" />
-          <span className="text-[16px]">Filter</span>
+          <span  className="text-[16px]">Filter</span>
         </button>
 
         {openFilter && (
@@ -133,7 +133,7 @@ export default function ProductsControl() {
               <button
                 type="button"
                 onClick={applyFilter}
-                className="h-9 rounded-md bg-orange-600 px-3 text-sm font-medium text-white"
+                className="h-9 rounded-md bg-orange-600  px-3 text-sm font-medium text-white"
               >
                 Apply
               </button>
@@ -151,7 +151,7 @@ export default function ProductsControl() {
             setOpenSort((v) => !v);
             setOpenFilter(false);
           }}
-          className="inline-flex items-center gap-2 rounded-md px-3 py-2 text-sm"
+          className="inline-flex items-center gap-2 rounded-md  py-2 text-sm"
         >
           <span className="text-[16px]">{sortLabel}</span>
           <ChevronDownIcon className="h-5 w-5" />

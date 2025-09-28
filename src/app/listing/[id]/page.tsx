@@ -1,6 +1,5 @@
-// app/products/[id]/page.tsx  (adjust your route path)
 import React from "react";
-import Image from "next/image";
+
 import { notFound } from "next/navigation";
 import ProductClient from "@/components/products/ProductClient";
 
@@ -32,48 +31,15 @@ async function getProduct(id: string): Promise<Product | null> {
 export default async function ProductPage({
   params,
 }: {
-   params: Promise<{ id: string }>;
-
+  params: Promise<{ id: string }>;
 }) {
   const product = await getProduct((await params).id);
   console.log(product);
   if (!product) notFound();
 
   return (
-    <div className="px-[100px]">
+    <div className="w-full">
       <ProductClient product={product} />
-
-      {product.brand ? (
-        <div className="mt-10">
-          {product.brand.image ? (
-            <div className="flex w-full items-center justify-between">
-              <p className="font-medium text-xl">Details</p>
-              <div className="relative w-[109px] h-[61px]">
-                <Image
-                  src={product.brand.image}
-                  alt={product.brand.name}
-                  fill
-                  className="object-contain"
-                />
-              </div>
-            </div>
-          ) : null}
-
-          <div className="mt-4">
-            <div className="flex text-[16px] text-[#3E424A]">
-              <p>
-                <span>Brand: </span>
-                {product.brand.name}
-              </p>
-            </div>
-            {product.description ? (
-              <p className="text-slate-700 leading-relaxed mt-5">
-                {product.description}
-              </p>
-            ) : null}
-          </div>
-        </div>
-      ) : null}
     </div>
   );
 }

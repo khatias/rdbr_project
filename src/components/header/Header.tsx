@@ -2,7 +2,7 @@ import React from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { cookies } from "next/headers";
-import { UserIcon, ChevronDownIcon } from "@heroicons/react/24/solid";
+import { UserIcon } from "@heroicons/react/24/solid";
 import CartButton from "@/components/cart/CartButton";
 import logo from "../../assets/Logo.png";
 import UserAvatar from "@/utils/UseAvatar";
@@ -31,7 +31,7 @@ export default async function Header() {
             <Link href="/" aria-label="Account" className="flex items-center gap-2 ml-5 pr-2">
               <UserAvatar />
             </Link>
-            <ChevronDownIcon className="h-5 w-5 text-gray-800" />
+      
           </>
         ) : (
           <Link href="/login" className="flex items-center gap-2">

@@ -1,7 +1,7 @@
-// ProductClient.tsx
 "use client";
 
 import React from "react";
+import Image from "next/image";
 import Gallery from "@/components/Gallery";
 import PurchaseBox from "@/components/products/PurchaseBox";
 
@@ -18,9 +18,8 @@ type Product = {
   brand?: Brand;
   color?: string | null;
   size?: string | null;
-  // from your API:
   total_price?: number;
-  quantity?: number; // total stock across all variants
+  quantity?: number;
 };
 
 function dedupeUrls(arr: string[]) {
@@ -32,6 +31,7 @@ function dedupeUrls(arr: string[]) {
     return true;
   });
 }
+
 const ciFindIndex = (arr: string[], value?: string | null) => {
   if (!value) return -1;
   const needle = value.toLowerCase();
@@ -40,9 +40,7 @@ const ciFindIndex = (arr: string[], value?: string | null) => {
 
 export default function ProductClient({ product }: { product: Product }) {
   const colors = (product.available_colors ?? []).map(String);
-  const rawImages = [product.cover_image, ...(product.images ?? [])].filter(
-    Boolean
-  );
+  const rawImages = [product.cover_image, ...(product.images ?? [])].filter(Boolean);
   const gallery = dedupeUrls(rawImages);
 
   const coverInImages = (product.images ?? []).includes(product.cover_image);
@@ -62,53 +60,73 @@ export default function ProductClient({ product }: { product: Product }) {
     return colors[colorIdx];
   };
 
-  // If API gives product.color = "Color 2" (not in available_colors),
-  // we safely fall back to the first color.
   const initialIndex = colorToGalleryIndex(product.color ?? colors[0]);
   const [activeIndex, setActiveIndex] = React.useState<number>(initialIndex);
 
   const controlledColor = galleryIndexToColor(activeIndex);
 
-  const handleColorChange = (next?: string) => {
-    setActiveIndex(colorToGalleryIndex(next));
-  };
-
+  const handleColorChange = (next?: string) => setActiveIndex(colorToGalleryIndex(next));
   const handleThumbClick = (i: number) => setActiveIndex(i);
 
-  // ✅ Global stock (no per-variant). If quantity is undefined, we treat as unlimited.
   const getStock = React.useCallback(() => {
     const q = product.quantity;
-    if (typeof q === "number" && Number.isFinite(q))
-      return Math.max(0, Math.floor(q));
-    return undefined; // PurchaseBox will treat as unlimited
+    if (typeof q === "number" && Number.isFinite(q)) return Math.max(0, Math.floor(q));
+    return undefined;
   }, [product.quantity]);
-  console.log(product.quantity);
+
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
+    <div className="grid grid-cols-2 justify-between w-full">
       <Gallery
         images={gallery}
         alt={product.name}
-        height={600}
         activeIndex={activeIndex}
         onChangeIndex={handleThumbClick}
       />
-
-      <div className="flex flex-col gap-14">
+      <div className="flex flex-col gap-8">
         <div className="text-3xl font-semibold text-[#10151F] flex flex-col gap-5">
           <h1>{product.name}</h1>
           <p>${product.price}</p>
         </div>
-
-        <PurchaseBox
-          productId={product.id}
-          colors={colors}
-          sizes={product.available_sizes ?? []}
-          initialColor={controlledColor ?? colors[0]} // seed swatch
-          controlledColor={controlledColor} // keep swatch in sync with gallery
-          onColorChange={handleColorChange}
-          currentImageUrl={gallery[activeIndex]}
-          getStock={getStock} // ← global stock
-        />
+        <div className="pb-8 border-b border-[#E1DFE1]">
+          <PurchaseBox
+            productId={product.id}
+            colors={colors}
+            sizes={product.available_sizes ?? []}
+            initialColor={controlledColor ?? colors[0]}
+            controlledColor={controlledColor}
+            onColorChange={handleColorChange}
+            currentImageUrl={gallery[activeIndex]}
+            getStock={getStock}
+          />
+        </div>
+        {product.brand ? (
+          <div className="mt-2">
+            {product.brand.image ? (
+              <div className="flex w-full items-center justify-between">
+                <p className="font-medium text-xl">Details</p>
+                <div className="relative w-[109px] h-[61px]">
+                  <Image
+                    src={product.brand.image}
+                    alt={product.brand.name}
+                    fill
+                    className="object-contain"
+                  />
+                </div>
+              </div>
+            ) : null}
+            <div className="mt-4">
+              <div className="flex text-[16px] text-[#3E424A]">
+                <p>
+                  <span>Brand: </span>
+                  {product.brand.name}
+                </p>
+              </div>
+            </div>
+          </div>
+        ) : null}
+        {product.description ? (
+          <p className="mt-2 text-slate-700 leading-relaxed">{product.description}</p>
+        ) : null}
       </div>
     </div>
   );

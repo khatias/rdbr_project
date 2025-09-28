@@ -27,13 +27,13 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
+        className={`${geistSans.variable} ${geistMono.variable} antialiased max-w-[2000px]  mx-auto`}
       >
         <CartProvider>
           <CartDrawer />
           <Header />
-          <main className="grid place-items-center">
-            <div className="w-full max-w-[1920px]">{children}</div>
+          <main className="grid place-items-center mt-[72px] mb-20 w-full px-[100px] ">
+            {children}
           </main>
         </CartProvider>
       </body>
