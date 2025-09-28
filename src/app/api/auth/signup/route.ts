@@ -2,19 +2,33 @@ import { NextResponse } from "next/server";
 
 const API_BASE = "https://api.redseam.redberryinternship.ge/api";
 
+type RegisterResponse = {
+  token?: string;
+  [key: string]: unknown;
+};
+
 export async function POST(req: Request) {
   const fd = await req.formData();
 
   const upstream = await fetch(`${API_BASE}/register`, {
     method: "POST",
-    headers: { Accept: "application/json" },
+    headers: {
+      Accept: "application/json",
+    },
     body: fd,
   });
 
-  const ct = upstream.headers.get("content-type") || "";
+  const ct = upstream.headers.get("content-type") ?? "";
   const text = await upstream.text();
-  const data =
-    ct.includes("application/json") && text ? JSON.parse(text) : null;
+
+  let data: RegisterResponse | null = null;
+  if (ct.includes("application/json") && text) {
+    try {
+      data = JSON.parse(text) as RegisterResponse;
+    } catch (err) {
+      console.error("Failed to parse JSON response:", err);
+    }
+  }
 
   const res = NextResponse.json(data, { status: upstream.status });
 

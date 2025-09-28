@@ -7,31 +7,39 @@ import sideImage from "../../../assets/authimage.png";
 function LoginForm() {
   const [error, setError] = useState<string | null>(null);
 
-async function onSubmit(e: React.FormEvent<HTMLFormElement>) {
-  e.preventDefault();
-  setError(null);
+  async function onSubmit(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    setError(null);
 
-  const form = e.currentTarget;
-  const email = (form.elements.namedItem("email") as HTMLInputElement).value;
-  const password = (form.elements.namedItem("password") as HTMLInputElement).value;
+    const form = e.currentTarget;
+    const email = (form.elements.namedItem("email") as HTMLInputElement).value;
+    const password = (form.elements.namedItem("password") as HTMLInputElement)
+      .value;
 
-  const res = await fetch("/api/auth/login", {
-    method: "POST",
-    headers: { Accept: "application/json", "Content-Type": "application/json" },
-    body: JSON.stringify({ email, password }),
-  });
+    const res = await fetch("/api/auth/login", {
+      method: "POST",
+      headers: {
+        Accept: "application/json",
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ email, password }),
+    });
 
-  const data = await res.json().catch(() => ({}));
-  if (!res.ok) {
-    if (res.status === 401 || res.status === 422) {
-      return setError("Invalid email or password");
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) {
+      if (res.status === 401 || res.status === 422) {
+        return setError("Invalid email or password");
+      }
+      return setError(data?.message || "Login failed");
     }
-    return setError(data?.message || "Login failed");
+    localStorage.setItem("currentUser", email);
+    if (!localStorage.getItem(`avatar:${email}`)) {
+      localStorage.setItem(`avatar:${email}`, "/avatar@3x.png");
+    }
+    window.dispatchEvent(new Event("avatar:change"));
+
+    window.location.href = "/";
   }
-
-  window.location.href = "/";
-}
-
 
   return (
     <div className="grid grid-cols-2 min-h-screen text-[#10151F]  ">

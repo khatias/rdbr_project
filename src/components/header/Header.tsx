@@ -1,17 +1,14 @@
-// components/Header.tsx
 import React from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { cookies } from "next/headers";
-import { UserIcon } from "@heroicons/react/24/solid";
+import { UserIcon, ChevronDownIcon } from "@heroicons/react/24/solid";
 import CartButton from "@/components/cart/CartButton";
-import { ChevronDownIcon } from "@heroicons/react/24/solid";
-// If you keep the asset import, make sure the filename + path case match EXACTLY
-import logo from "../../assets/Logo.png"; // <- check case on disk (Logo.png vs logo.png)
+import logo from "../../assets/Logo.png";
+import UserAvatar from "@/utils/UseAvatar";
 
 export default async function Header() {
-  const cookieStore = await cookies();
-  const token = cookieStore.get("token")?.value;
+  const token = (await cookies()).get("token")?.value;
   const isAuthed = !!token;
 
   return (
@@ -27,16 +24,12 @@ export default async function Header() {
         />
       </Link>
 
-      <div className="flex items-center ">
+      <div className="flex items-center">
         {isAuthed ? (
           <>
             <CartButton />
-            <Link
-              href=""
-              aria-label="Account"
-              className="flex items-center gap-3 ml-5"
-            >
-              <span className="w-[40px] h-[40px] rounded-full bg-amber-700 " />
+            <Link href="/" aria-label="Account" className="flex items-center gap-2 ml-5 pr-2">
+              <UserAvatar />
             </Link>
             <ChevronDownIcon className="h-5 w-5 text-gray-800" />
           </>
