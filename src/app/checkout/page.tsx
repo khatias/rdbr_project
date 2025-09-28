@@ -56,7 +56,7 @@ export default async function CheckoutPage() {
 
   if (!Array.isArray(data)) {
     return (
-      <div className="max-w-5xl mx-auto px-6 py-12">
+      <div className=" py-12 w-full">
         <h1 className="text-3xl font-semibold text-[#10151F]">Checkout</h1>
         <div className="mt-6 rounded-lg border border-[#E1DFE1] p-6">
           <p className="text-red-600 mb-4">{data.message}</p>

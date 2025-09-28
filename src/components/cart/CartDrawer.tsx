@@ -6,20 +6,25 @@ import { useCart } from "./CartContext";
 import { XMarkIcon, PlusIcon, MinusIcon } from "@heroicons/react/24/outline";
 import emptyCartImage from "../../assets/emptycart.png";
 
+import { useRouter } from "next/navigation";
+
 export default function CartDrawer() {
-  const { isOpen, close, items, subtotal, error, updateQty, remove, pending } = useCart();
+  const { isOpen, close, items, subtotal, error, updateQty, remove, pending } =
+    useCart();
   const itemsQuantity = items.reduce((acc, item) => acc + item.quantity, 0);
 
+  const router = useRouter();
   return (
     <>
-      {isOpen && <div className="fixed inset-0 z-40 bg-black/40" onClick={close} />}
+      {isOpen && (
+        <div className="fixed inset-0 z-40 bg-black/40" onClick={close} />
+      )}
       <aside
         className={`fixed right-0 top-0 z-50 h-full w-[540px] max-w-[90vw] bg-[#F8F6F7] shadow-xl transition-transform duration-300 ${
           isOpen ? "translate-x-0" : "translate-x-full"
         } flex flex-col`}
         aria-hidden={!isOpen}
       >
-        {/* Header */}
         <header className="flex-none flex items-center justify-between px-10 py-10">
           <div className="flex items-center gap-2">
             <h2 className="text-xl font-medium">Shopping Cart</h2>
@@ -68,12 +73,16 @@ export default function CartDrawer() {
                     {(() => {
                       const src = it.image ?? it.cover_image; // prefer color-specific image
                       return src ? (
-                        <Image src={src} alt={it.name} fill className="object-cover" />
+                        <Image
+                          src={src}
+                          alt={it.name}
+                          fill
+                          className="object-cover"
+                        />
                       ) : null;
                     })()}
                   </div>
 
-                  {/* Info */}
                   <div className="min-w-0 flex-1 flex flex-col">
                     <div className="flex-1">
                       <p className="truncate text-sm font-medium text-[#10151F] pb-2">
@@ -85,7 +94,6 @@ export default function CartDrawer() {
                       </div>
                     </div>
 
-                    {/* Quantity controls */}
                     <div className="mt-auto">
                       <div className="inline-flex items-center rounded-[22px] border border-[#E1DFE1] w-[70px] h-[26px]">
                         <button
@@ -121,7 +129,6 @@ export default function CartDrawer() {
                     </div>
                   </div>
 
-                  {/* Price + Remove */}
                   <div className="flex flex-col justify-between items-end text-sm font-medium">
                     <p>${(it.price * it.quantity).toFixed(2)}</p>
                     <button
@@ -147,7 +154,9 @@ export default function CartDrawer() {
           <footer className="flex-none px-10 py-6">
             <div className="flex items-center justify-between text-sm">
               <span className="text-[#3E424A]">Items Subtotal</span>
-              <span className="font-medium text-[#10151F]">${subtotal.toFixed(2)}</span>
+              <span className="font-medium text-[#10151F]">
+                ${subtotal.toFixed(2)}
+              </span>
             </div>
             <div className="mt-2 flex items-center justify-between text-sm">
               <span className="text-[#3E424A]">Delivery</span>
@@ -160,6 +169,10 @@ export default function CartDrawer() {
               </span>
             </div>
             <button
+              onClick={() => {
+                close();
+                router.push("/checkout");
+              }}
               className="mt-10 w-full bg-[#FF4000] text-white rounded-[10px] py-4 font-medium hover:bg-[#dd430f] transition-colors disabled:opacity-50 cursor-pointer"
               disabled={items.length === 0 || pending}
             >

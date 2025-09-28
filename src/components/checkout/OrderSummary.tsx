@@ -17,9 +17,12 @@ type CartItem = {
   size?: string | null;
 };
 
-export default function OrderSummary({ initialItems = [] }: { initialItems?: CartItem[] }) {
+export default function OrderSummary({
+  initialItems = [],
+}: {
+  initialItems?: CartItem[];
+}) {
   const { items, updateQty, remove, pending } = useCart();
-
 
   const list = items.length ? items : initialItems;
   const subtotal = list.reduce((s, it) => s + it.price * it.quantity, 0);
@@ -28,28 +31,32 @@ export default function OrderSummary({ initialItems = [] }: { initialItems?: Car
 
   return (
     <div className="h-[635px] flex flex-col justify-between ">
-
-
       {list.length === 0 ? (
-        <div className="mt-4 text-sm text-[#3E424A]">
-          Your cart is empty.
-        </div>
+        <div className="mt-4 text-sm text-[#3E424A]">Your cart is empty.</div>
       ) : (
-        <div className="h-[635px] flex flex-col justify-between space-y-6">
+        <div className="h-[635px] flex flex-col justify-between space-y-6 ">
           <ul className="space-y-10  ">
             {list.map((it, idx) => (
-              <li key={`${it.id}-${it.color ?? "na"}-${it.size ?? "na"}-${idx}`} className="flex gap-6">
-                {/* Image */}
+              <li
+                key={`${it.id}-${it.color ?? "na"}-${it.size ?? "na"}-${idx}`}
+                className="flex gap-6"
+              >
                 <div className="relative h-[134px] w-25 flex-shrink-0 rounded-md border border-[#E1DFE1] overflow-hidden bg-slate-50">
                   {it.cover_image ? (
-                    <Image src={it.cover_image} alt={it.name} fill className="object-cover" />
+                    <Image
+                      src={it.cover_image}
+                      alt={it.name}
+                      fill
+                      className="object-cover"
+                    />
                   ) : null}
                 </div>
 
-                {/* Info */}
                 <div className="min-w-0 flex-1 flex flex-col">
                   <div className="flex-1">
-                    <p className="truncate text-sm font-medium text-[#10151F] pb-2">{it.name}</p>
+                    <p className="truncate text-sm font-medium text-[#10151F] pb-2">
+                      {it.name}
+                    </p>
                     <div className="grid gap-2 text-xs font-medium text-[#3E424A]">
                       {it.color && <p>{it.color}</p>}
                       {it.size && <p>{it.size}</p>}
@@ -72,7 +79,9 @@ export default function OrderSummary({ initialItems = [] }: { initialItems?: Car
                       >
                         <MinusIcon className="h-4 w-4" />
                       </button>
-                      <span className="text-center text-xs font-medium text-[#10151F]">{it.quantity}</span>
+                      <span className="text-center text-xs font-medium text-[#10151F]">
+                        {it.quantity}
+                      </span>
                       <button
                         aria-label="Increase quantity"
                         className="h-8 w-8 grid place-items-center disabled:opacity-40"
@@ -90,7 +99,6 @@ export default function OrderSummary({ initialItems = [] }: { initialItems?: Car
                   </div>
                 </div>
 
-            
                 <div className="flex flex-col justify-between items-end text-sm font-medium">
                   <p>${(it.price * it.quantity).toFixed(2)}</p>
                   <button
@@ -113,15 +121,21 @@ export default function OrderSummary({ initialItems = [] }: { initialItems?: Car
           <div className="mt-6  pt-4 space-y-2 text-sm">
             <div className="flex justify-between">
               <span className="text-[#3E424A]">Items Subtotal</span>
-              <span className="font-medium text-[#10151F]">${subtotal.toFixed(2)}</span>
+              <span className="font-medium text-[#10151F]">
+                ${subtotal.toFixed(2)}
+              </span>
             </div>
             <div className="flex justify-between">
               <span className="text-[#3E424A]">Delivery</span>
-              <span className="font-medium text-[#10151F]">${delivery.toFixed(2)}</span>
+              <span className="font-medium text-[#10151F]">
+                ${delivery.toFixed(2)}
+              </span>
             </div>
             <div className="flex justify-between text-base pt-2 b">
               <span className="font-semibold text-[#10151F]">Total</span>
-              <span className="font-semibold text-[#10151F]">${total.toFixed(2)}</span>
+              <span className="font-semibold text-[#10151F]">
+                ${total.toFixed(2)}
+              </span>
             </div>
           </div>
 
